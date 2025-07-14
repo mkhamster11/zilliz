@@ -3,9 +3,9 @@ import json
 import requests
 
 
-TOKEN ="1f9161428474f98ef959b59a4a56ed9d7c02dfc93d2f5f7339d65d09e0a207fac2c3b20210413f54a89e2f3915f49cbe8b266d65"
-
-
+TOKEN =""
+# URL = "https://in03-97313d7f3a90d79.serverless.gcp-us-west1.cloud.zilliz.com"
+URL = "https://in01-296b8468e8e86ef.gcp-us-west1.vectordb.zillizcloud.com:443" ## paid
 def insertDataApi(name,data,TOKEN=TOKEN,collection_name="sort_skills"):
     """
     Insert data into the Zilliz cloud database.
@@ -15,7 +15,7 @@ def insertDataApi(name,data,TOKEN=TOKEN,collection_name="sort_skills"):
             'Accept': "application/json",
             'Content-Type': "application/json"
         }
-    url = "https://in03-97313d7f3a90d79.serverless.gcp-us-west1.cloud.zilliz.com/v2/vectordb/entities/insert"
+    url = f"{URL}/v2/vectordb/entities/insert"
 
     payload = json.dumps({"collectionName":collection_name,
                "data":[{"name":name,"vector":data}]})
@@ -28,7 +28,7 @@ def insertDataApi(name,data,TOKEN=TOKEN,collection_name="sort_skills"):
 
 def queryDataApi(data,feilds:list=["name","distance"],collection_name="skills",limit=15):
 
-    url = "https://in03-97313d7f3a90d79.serverless.gcp-us-west1.cloud.zilliz.com/v2/vectordb/entities/search"
+    url = f"{URL}/v2/vectordb/entities/search"
     payload = json.dumps({
                 "collectionName":collection_name,
                 "data":[data],
@@ -44,10 +44,24 @@ def queryDataApi(data,feilds:list=["name","distance"],collection_name="skills",l
 
     return response.json()
 
-
+def getCount(collection_name):
+    url = f"{URL}/v2/vectordb/collections/get_stats"
+    headers = {
+    "Authorization": F"Bearer {TOKEN}",
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+    }
+    payload = json.dumps({
+        "collectionName":collection_name
+    })
+    response = requests.post(url,data=payload,headers=headers)
+    try:
+        return response.json()['data']
+    except Exception as e:
+        return e
 
 def getDataApi(collection_name="skills",id_list=[]):
-    url = "https://in03-97313d7f3a90d79.serverless.gcp-us-west1.cloud.zilliz.com/v2/vectordb/entities/get"
+    url = f"{URL}/v2/vectordb/entities/get"
     payload = json.dumps({
                 "collectionName":collection_name,
                 "filter": f"Auto_id in {id_list}"})
@@ -62,7 +76,7 @@ def getDataApi(collection_name="skills",id_list=[]):
     return response.json()
 
 def deleteDataApi(collection_name="skills",id_list=[]):
-    url = "https://in03-97313d7f3a90d79.serverless.gcp-us-west1.cloud.zilliz.com/v2/vectordb/entities/delete"
+    url = f"{URL}/v2/vectordb/entities/delete"
     payload = json.dumps({
                 "collectionName":collection_name,
                 "filter": f"Auto_id in {id_list}"})
